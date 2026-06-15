@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="title" content="CogCanvas: A Benchmark for Evaluating Multi-Subject Reference-Based Image Generation">
+  <meta name="description" content="CogCanvas is a benchmark for multi-subject reference-based image generation with 1,952 reference images, 1,361 compositional prompts, and a six-axis evaluation protocol.">
+  <meta name="keywords" content="benchmark, multi-subject generation, reference-based image generation, identity preservation, diffusion models, text-to-image, personalization">
+  <meta name="author" content="CogCanvas Authors">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="CogCanvas: A Benchmark for Evaluating Multi-Subject Reference-Based Image Generation">
+  <meta property="og:description" content="CogCanvas is a benchmark for multi-subject reference-based image generation with 1,952 reference images, 1,361 compositional prompts, and a six-axis evaluation protocol.">
+  <meta property="og:url" content="https://YOUR_DOMAIN.com/cogcanvas">
+  <meta property="og:image" content="https://YOUR_DOMAIN.com/static/images/social_preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CogCanvas: Multi-Subject Reference-Based Image Generation Benchmark">
+  <meta name="twitter:description" content="1,952 reference images · 1,361 prompts · 6-axis evaluation · 2–5 person compositions">
+  <meta name="twitter:image" content="https://YOUR_DOMAIN.com/static/images/social_preview.png">
+
+  <meta name="citation_title" content="CogCanvas: A Benchmark for Evaluating Multi-Subject Reference-Based Image Generation">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="NeurIPS 2026">
+
+  <title>CogCanvas | Multi-Subject Reference-Based Image Generation Benchmark</title>
+
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  </noscript>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+
+  <style>
+    /* ── Global ── */
+    body { font-family: 'Inter', sans-serif; }
+    .publication-title { font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
+    .publication-authors { margin-top: 0.8rem; }
+    .author-block { margin: 0 0.3rem; }
+
+    /* ── Stats banner ── */
+    .stats-section { background: #f8faff; padding: 3rem 1.5rem; }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      height: 100%;
+    }
+    .stat-number { font-size: 2.4rem; font-weight: 800; color: #2563eb; line-height: 1; }
+    .stat-label { font-size: 0.9rem; color: #555; margin-top: 0.4rem; font-weight: 500; }
+
+    /* ── Section headings ── */
+    .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
+
+    /* ── Metric cards ── */
+    .metric-card {
+      background: white;
+      border-left: 4px solid #2563eb;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 1px 8px rgba(0,0,0,.06);
+      height: 100%;
+    }
+    .metric-name { font-weight: 700; font-size: 1rem; color: #1e40af; }
+    .metric-desc { font-size: 0.88rem; color: #444; margin-top: 0.3rem; line-height: 1.5; }
+
+    /* ── Tables ── */
+    .result-table { font-size: 0.85rem; }
+    .result-table thead th { background: #2563eb; color: white; text-align: center; vertical-align: middle; }
+    .result-table tbody td { text-align: center; vertical-align: middle; }
+    .result-table .best { font-weight: 800; }
+    .result-table .second { text-decoration: underline; }
+    .result-table .group-header td { background: #eff6ff; font-weight: 700; text-align: left; }
+    .result-table .ours td { background: #fefce8; }
+
+    .bench-table { font-size: 0.85rem; }
+    .bench-table thead th { background: #1e3a5f; color: white; text-align: center; vertical-align: middle; }
+    .bench-table tbody td { text-align: center; vertical-align: middle; }
+    .bench-table .ours-row td { background: #eff6ff; font-weight: 700; }
+    .yes { color: #16a34a; font-weight: 700; }
+    .no  { color: #9ca3af; }
+    .partial { color: #d97706; font-weight: 600; }
+
+    /* ── Pipeline ── */
+    .pipeline-box {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 1.5rem;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+    .stage-badge {
+      display: inline-block;
+      background: #2563eb;
+      color: white;
+      border-radius: 20px;
+      padding: 0.15rem 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .pipeline-step { margin-bottom: 1rem; }
+
+    /* ── BibTeX ── */
+    .bibtex-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .copy-bibtex-btn {
+      background: #2563eb; color: white; border: none; border-radius: 6px;
+      padding: 0.4rem 0.9rem; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .copy-bibtex-btn:hover { background: #1d4ed8; }
+
+    /* ── Scroll to top ── */
+    .scroll-to-top {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+      background: #2563eb; color: white; border: none; border-radius: 50%;
+      width: 44px; height: 44px; cursor: pointer; font-size: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      display: none;
+    }
+    .scroll-to-top:hover { background: #1d4ed8; }
+  </style>
+
+  <script>
+    window.addEventListener('scroll', function () {
+      var btn = document.querySelector('.scroll-to-top');
+      if (btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+    });
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function copyBibTeX() {
+      var code = document.getElementById('bibtex-code').innerText;
+      navigator.clipboard.writeText(code).then(function () {
+        var btn = document.querySelector('.copy-bibtex-btn .copy-text');
+        if (btn) { btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = 'Copy'; }, 2000); }
+      });
+    }
+  </script>
+</head>
+<body>
+
+<button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top"
+  style="align-items:center;justify-content:center;">
+  &#8679;
+</button>
+
+<main id="main-content">
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section class="hero" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: white; padding: 3.5rem 1.5rem 2.5rem;">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+
+          <p style="font-size:0.95rem; letter-spacing:0.12em; text-transform:uppercase; color:#93c5fd; font-weight:600; margin-bottom:0.8rem;">
+            NeurIPS 2026 &nbsp;·&nbsp; Benchmark
+          </p>
+
+          <h1 class="publication-title" style="color:white;">
+            <span style="color:#60a5fa;">Cog</span>Canvas: A Benchmark for Evaluating<br>
+            Multi-Subject Reference-Based Image Generation
+          </h1>
+
+          <div class="is-size-5 publication-authors" style="color: #cbd5e1;">
+            <span class="author-block">
+              <a href="#" target="_blank" style="color:#93c5fd;">First Author</a><sup>*</sup>,
+            </span>
+            <span class="author-block">
+              <a href="#" target="_blank" style="color:#93c5fd;">Second Author</a><sup>*</sup>,
+            </span>
+            <span class="author-block">
+              <a href="#" target="_blank" style="color:#93c5fd;">Third Author</a>
+            </span>
+          </div>
+
+          <div class="is-size-6 publication-authors" style="color: #94a3b8; margin-top: 0.4rem;">
+            <span>Institution Name &nbsp;·&nbsp; NeurIPS 2026</span>
+            <br><small><sup>*</sup>Equal Contribution</small>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="column has-text-centered" style="margin-top: 1.5rem;">
+            <div class="publication-links" style="display:flex; flex-wrap:wrap; gap:0.6rem; justify-content:center;">
+
+              <a href="https://arxiv.org/pdf/ARXIV_ID.pdf" target="_blank"
+                 class="button is-normal is-rounded"
+                 style="background:#2563eb; color:white; border:none;">
+                <span style="margin-right:0.4rem;">📄</span> Paper
+              </a>
+
+              <a href="https://arxiv.org/abs/ARXIV_ID" target="_blank"
+                 class="button is-normal is-rounded"
+                 style="background:#7c3aed; color:white; border:none;">
+                <span style="margin-right:0.4rem;">📝</span> arXiv
+              </a>
+
+              <a href="https://anonymous.4open.science/r/cogcanvas-eval" target="_blank"
+                 class="button is-normal is-rounded"
+                 style="background:#1f2937; color:white; border:none;">
+                <span style="margin-right:0.4rem;">💻</span> Code
+              </a>
+
+              <a href="https://huggingface.co/datasets/multimedia-synergy-lab/CogCanvas" target="_blank"
+                 class="button is-normal is-rounded"
+                 style="background:#f59e0b; color:#1f2937; border:none; font-weight:600;">
+                🤗 Dataset
+              </a>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ STATS ═══════════════════════ -->
+<section class="stats-section">
+  <div class="container is-max-desktop">
+    <p class="section-title" style="color:#1e3a5f;">Dataset at a Glance</p>
+    <div class="columns is-multiline is-centered">
+
+      <div class="column is-2-desktop is-4-tablet is-6-mobile">
+        <div class="stat-card">
+          <div class="stat-number">100</div>
+          <div class="stat-label">Celebrity Identities<br><small>(CelebA-HQ)</small></div>
+        </div>
+      </div>
+
+      <div class="column is-2-desktop is-4-tablet is-6-mobile">
+        <div class="stat-card">
+          <div class="stat-number">115</div>
+          <div class="stat-label">Unique Items<br><small>(80 objects + 35 fashion)</small></div>
+        </div>
+      </div>
+
+      <div class="column is-2-desktop is-4-tablet is-6-mobile">
+        <div class="stat-card">
+          <div class="stat-number">29</div>
+          <div class="stat-label">Background Scenes<br><small>(incl. Vietnamese landmarks)</small></div>
+        </div>
+      </div>
+
+      <div class="column is-2-desktop is-4-tablet is-6-mobile">
+        <div class="stat-card">
+          <div class="stat-number">1,952</div>
+          <div class="stat-label">Reference Images<br><small>(total curated pool)</small></div>
+        </div>
+      </div>
+
+      <div class="column is-2-desktop is-4-tablet is-6-mobile">
+        <div class="stat-card">
+          <div class="stat-number">1,361</div>
+          <div class="stat-label">Compositional Prompts<br><small>(2–5 persons)</small></div>
+        </div>
+      </div>
+
+      <div class="column is-2-desktop is-4-tablet is-6-mobile">
+        <div class="stat-card">
+          <div class="stat-number">6</div>
+          <div class="stat-label">Evaluation Axes<br><small>(ID, DINO, CLIP, BG, Aesth., VQA)</small></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ ABSTRACT ═══════════════════════ -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            We introduce <strong>CogCanvas</strong>, a benchmark for evaluating multi-subject, reference-based image generation under complex spatial and interaction constraints.
+            While existing benchmarks address either single-subject personalization or simple compositional text prompts, none simultaneously evaluates multi-identity scenes with explicit human–object interaction, background scene grounding, and spatial plausibility.
+          </p>
+          <p>
+            CogCanvas provides a curated reference pool of <strong>1,952</strong> images spanning <strong>100</strong> celebrity identities, <strong>115</strong> unique objects and fashion items, and <strong>29</strong> real-world background scenes, from which we construct <strong>1,361</strong> compositional prompts covering group sizes of 2–5 persons.
+            Each prompt is annotated with structured interaction and position graphs as ground-truth supervision.
+          </p>
+          <p>
+            We define a six-axis evaluation protocol: identity preservation, object/fashion attribute binding, text–image alignment, background consistency, aesthetic quality, and attribute/interaction evaluation.
+            Benchmarking five representative state-of-the-art methods reveals that all models degrade substantially as group size increases from 2 to 5, with near-complete failure on attribute-binding metrics beyond 3 subjects.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ BENCHMARK COMPARISON ═══════════════════════ -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="section-title">How CogCanvas Compares</h2>
+    <p class="has-text-centered" style="color:#555; margin-top:-1rem; margin-bottom:1.5rem; font-size:0.92rem;">
+      CogCanvas is the <strong>only</strong> benchmark covering all five evaluation dimensions simultaneously.
+    </p>
+    <div class="table-container">
+      <table class="table bench-table is-fullwidth is-bordered" style="border-radius:8px; overflow:hidden;">
+        <thead>
+          <tr>
+            <th>Benchmark</th>
+            <th>Venue</th>
+            <th style="text-align:center;">#Prompts</th>
+            <th style="text-align:center;">Human Refs</th>
+            <th style="text-align:center;">Object Refs</th>
+            <th style="text-align:center;">HOI</th>
+            <th style="text-align:center;">BG</th>
+            <th style="text-align:center;">Spatial</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>T2I-CompBench</td>
+            <td>NeurIPS'23</td>
+            <td>6,000</td>
+            <td>0</td>
+            <td>0</td>
+            <td class="no">–</td>
+            <td class="no">–</td>
+            <td class="partial">Partial</td>
+          </tr>
+          <tr>
+            <td>DreamBench</td>
+            <td>CVPR'23</td>
+            <td>750</td>
+            <td>0</td>
+            <td>30</td>
+            <td class="no">–</td>
+            <td class="no">–</td>
+            <td class="no">–</td>
+          </tr>
+          <tr>
+            <td>DreamBench++</td>
+            <td>ICLR'25</td>
+            <td>1,350</td>
+            <td>20</td>
+            <td>110</td>
+            <td class="no">–</td>
+            <td class="no">–</td>
+            <td class="no">–</td>
+          </tr>
+          <tr>
+            <td>MultiHuman-TB</td>
+            <td>NeurIPS'25</td>
+            <td>1,800</td>
+            <td>5,550</td>
+            <td>0</td>
+            <td class="partial">Partial</td>
+            <td class="no">–</td>
+            <td class="no">–</td>
+          </tr>
+          <tr>
+            <td>XVerseBench</td>
+            <td>NeurIPS'25</td>
+            <td>300</td>
+            <td>20</td>
+            <td>119</td>
+            <td class="partial">Partial</td>
+            <td class="no">–</td>
+            <td class="no">–</td>
+          </tr>
+          <tr class="ours-row">
+            <td><strong>CogCanvas (Ours)</strong></td>
+            <td>–</td>
+            <td><strong>1,361</strong></td>
+            <td><strong>100</strong></td>
+            <td><strong>115</strong></td>
+            <td class="yes">✓</td>
+            <td class="yes">✓</td>
+            <td class="yes">✓</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.78rem; color:#777; margin-top:0.5rem; text-align:center;">
+      HOI = Human–Object Interaction evaluation &nbsp;·&nbsp; BG = Background scene reference &nbsp;·&nbsp; Spatial = spatial plausibility evaluation
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ EVALUATION PROTOCOL ═══════════════════════ -->
+<section class="section" style="background:#f8faff;">
+  <div class="container is-max-desktop">
+    <h2 class="section-title" style="color:#1e3a5f;">Six-Axis Evaluation Protocol</h2>
+    <div class="columns is-multiline">
+
+      <div class="column is-4-desktop is-6-tablet">
+        <div class="metric-card">
+          <div class="metric-name">ID-Sim &nbsp;<small style="color:#6b7280; font-weight:400;">(Identity Similarity)</small></div>
+          <div class="metric-desc">
+            ArcFace cosine similarity between reference and generated faces.
+            Uses Hungarian matching to align detected faces to reference identities in multi-person scenes.
+          </div>
+        </div>
+      </div>
+
+      <div class="column is-4-desktop is-6-tablet">
+        <div class="metric-card" style="border-color:#7c3aed;">
+          <div class="metric-name" style="color:#7c3aed;">DINO-Sim &nbsp;<small style="color:#6b7280; font-weight:400;">(Object/Fashion)</small></div>
+          <div class="metric-desc">
+            DINOv2 cosine similarity for object/fashion regions. Captures holistic semantic similarity for non-face entities such as specific product models and clothing.
+          </div>
+        </div>
+      </div>
+
+      <div class="column is-4-desktop is-6-tablet">
+        <div class="metric-card" style="border-color:#059669;">
+          <div class="metric-name" style="color:#059669;">CLIP-T &nbsp;<small style="color:#6b7280; font-weight:400;">(Text Alignment)</small></div>
+          <div class="metric-desc">
+            CLIP similarity between the input prompt and the generated image. Measures overall text–image semantic alignment but cannot alone distinguish correct identity assignments.
+          </div>
+        </div>
+      </div>
+
+      <div class="column is-4-desktop is-6-tablet">
+        <div class="metric-card" style="border-color:#dc2626;">
+          <div class="metric-name" style="color:#dc2626;">BG-Sim &nbsp;<small style="color:#6b7280; font-weight:400;">(Background)</small></div>
+          <div class="metric-desc">
+            DINOv3 similarity on SAM-masked background regions. Directly penalizes hallucinated or semantically inconsistent backgrounds without manual annotation.
+          </div>
+        </div>
+      </div>
+
+      <div class="column is-4-desktop is-6-tablet">
+        <div class="metric-card" style="border-color:#d97706;">
+          <div class="metric-name" style="color:#d97706;">Aesth. &nbsp;<small style="color:#6b7280; font-weight:400;">(Aesthetic Quality)</small></div>
+          <div class="metric-desc">
+            LAION aesthetic predictor score. Evaluates perceptual quality independent of content accuracy — necessary but not sufficient for benchmark success.
+          </div>
+        </div>
+      </div>
+
+      <div class="column is-4-desktop is-6-tablet">
+        <div class="metric-card" style="border-color:#0891b2;">
+          <div class="metric-name" style="color:#0891b2;">Attr-VQA &nbsp;<small style="color:#6b7280; font-weight:400;">(Attribute + Interaction)</small></div>
+          <div class="metric-desc">
+            Gemma4 MLLM binary VQA for attribute binding ("Does person at [pos] wear a [color] outfit?") and interaction consistency from ground-truth interaction graphs.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ RESULTS ═══════════════════════ -->
+<section class="section" style="background:#f8faff;">
+  <div class="container" style="max-width:960px;">
+    <h2 class="section-title" style="color:#1e3a5f;">Quantitative Results</h2>
+    <p class="has-text-centered" style="color:#555; margin-top:-1rem; margin-bottom:1.5rem; font-size:0.92rem;">
+      All methods degrade substantially as group size grows from 2 to 5. <u>Underline</u> = best among evaluated methods. ↑ higher is better.
+    </p>
+    <div class="table-container">
+      <table class="table result-table is-fullwidth is-bordered" style="border-radius:8px; overflow:hidden;">
+        <thead>
+          <tr>
+            <th style="width:3rem;">N</th>
+            <th>Method</th>
+            <th>ID-Sim ↑</th>
+            <th>DINO-Sim ↑</th>
+            <th>CLIP-T ↑</th>
+            <th>BG-Sim ↑</th>
+            <th>Aesth. ↑</th>
+            <th>Attr-VQA ↑</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- N=2 -->
+          <tr class="group-header">
+            <td colspan="8">N = 2 &nbsp;<small style="font-weight:400;">(558 prompts)</small></td>
+          </tr>
+          <tr><td>2</td><td>OmniGen2</td><td>13.07</td><td><u>33.16</u></td><td><u>62.23</u></td><td>—</td><td>51.63</td><td>33.04</td></tr>
+          <tr><td>2</td><td>UNO</td><td>23.23</td><td>28.03</td><td>62.11</td><td>—</td><td><u>55.24</u></td><td>35.12</td></tr>
+          <tr><td>2</td><td>DreamO</td><td>3.07</td><td>5.98</td><td>58.79</td><td>—</td><td>44.42</td><td>14.45</td></tr>
+          <tr><td>2</td><td>XVerse</td><td><u>42.33</u></td><td>32.96</td><td>61.60</td><td>—</td><td>39.73</td><td>7.80</td></tr>
+          <tr><td>2</td><td>MOSAIC</td><td>9.93</td><td>4.77</td><td>57.29</td><td>—</td><td>44.01</td><td>11.22</td></tr>
+
+          <!-- N=3 -->
+          <tr class="group-header">
+            <td colspan="8">N = 3 &nbsp;<small style="font-weight:400;">(382 prompts)</small></td>
+          </tr>
+          <tr><td>3</td><td>OmniGen2</td><td>0.62</td><td>1.74</td><td>57.57</td><td>—</td><td>37.11</td><td>3.68</td></tr>
+          <tr><td>3</td><td>UNO</td><td>19.60</td><td><u>17.35</u></td><td><u>61.02</u></td><td>—</td><td><u>56.01</u></td><td><u>14.65</u></td></tr>
+          <tr><td>3</td><td>DreamO</td><td>0.39</td><td>1.20</td><td>57.47</td><td>—</td><td>41.48</td><td>2.99</td></tr>
+          <tr><td>3</td><td>XVerse</td><td><u>27.21</u></td><td>15.62</td><td>60.08</td><td>—</td><td>38.46</td><td>4.03</td></tr>
+          <tr><td>3</td><td>MOSAIC</td><td>11.45</td><td>5.87</td><td>57.52</td><td>—</td><td>42.66</td><td>5.67</td></tr>
+
+          <!-- N=4 -->
+          <tr class="group-header">
+            <td colspan="8">N = 4 &nbsp;<small style="font-weight:400;">(225 prompts)</small></td>
+          </tr>
+          <tr><td>4</td><td>OmniGen2</td><td>0.39</td><td>1.60</td><td>57.63</td><td>—</td><td>37.36</td><td>5.78</td></tr>
+          <tr><td>4</td><td>UNO</td><td><u>19.60</u></td><td><u>17.35</u></td><td><u>61.02</u></td><td>—</td><td><u>56.01</u></td><td><u>14.65</u></td></tr>
+          <tr><td>4</td><td>DreamO</td><td>0.19</td><td>0.75</td><td>57.39</td><td>—</td><td>42.34</td><td>4.63</td></tr>
+          <tr><td>4</td><td>XVerse</td><td>2.67</td><td>2.63</td><td>57.71</td><td>—</td><td>36.54</td><td>3.17</td></tr>
+          <tr><td>4</td><td>MOSAIC</td><td>2.46</td><td>1.99</td><td>57.34</td><td>—</td><td>37.73</td><td>2.61</td></tr>
+
+          <!-- N=5 -->
+          <tr class="group-header">
+            <td colspan="8">N = 5 &nbsp;<small style="font-weight:400;">(196 prompts)</small></td>
+          </tr>
+          <tr><td>5</td><td>OmniGen2</td><td>0.08</td><td>0.43</td><td>57.38</td><td>—</td><td>36.85</td><td>2.49</td></tr>
+          <tr><td>5</td><td>UNO</td><td><u>13.47</u></td><td><u>8.58</u></td><td><u>59.26</u></td><td>—</td><td><u>56.40</u></td><td><u>7.27</u></td></tr>
+          <tr><td>5</td><td>DreamO</td><td>0.03</td><td>0.17</td><td>57.24</td><td>—</td><td>37.35</td><td>1.79</td></tr>
+          <tr><td>5</td><td>XVerse</td><td>0.52</td><td>0.46</td><td>57.15</td><td>—</td><td>36.66</td><td>1.28</td></tr>
+          <tr><td>5</td><td>MOSAIC</td><td>0.18</td><td>0.24</td><td>57.24</td><td>—</td><td>36.79</td><td>1.92</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.78rem; color:#777; margin-top:0.5rem; text-align:center;">
+      BG-Sim results pending. OmniGen2, DreamO, XVerse, MOSAIC score near zero on DINO-Sim and Attr-VQA at N ≥ 4.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ BIBTEX ═══════════════════════ -->
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <div class="bibtex-header">
+      <h2 class="title">BibTeX</h2>
+      <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
+        <i class="fas fa-copy"></i>
+        <span class="copy-text">Copy</span>
+      </button>
+    </div>
+    <!-- <pre id="bibtex-code" style="background:#f8faff; border-radius:8px; padding:1.2rem; font-size:0.85rem; overflow-x:auto;"><code>@inproceedings{cogcanvas2026,
+  title     = {CogCanvas: A Benchmark for Evaluating Multi-Subject Reference-Based Image Generation},
+  author    = {First Author and Second Author and Third Author},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2026},
+  url       = {https://YOUR_DOMAIN.com/cogcanvas}
+}</code></pre> -->
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="footer" style="background:#0f172a; color:#94a3b8; padding:2rem 1.5rem;">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8 has-text-centered">
+        <p style="font-size:0.85rem;">
+          This page was built using the
+          <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank" style="color:#60a5fa;">Academic Project Page Template</a>,
+          adopted from the <a href="https://nerfies.github.io" target="_blank" style="color:#60a5fa;">Nerfies</a> project page.
+          You are free to borrow the source code of this website — we just ask that you link back.
+          <br>Licensed under
+          <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank" style="color:#60a5fa;">CC BY-SA 4.0</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

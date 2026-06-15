@@ -1,0 +1,6 @@
+/* CogCanvas project page — supplemental styles */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+a { text-decoration: none; }
+.table-container { overflow-x: auto; }
